@@ -1,0 +1,25 @@
+web:
+    image: shaneburkhart/branded_spinner
+    ports:
+        - "3000:3000"
+    links:
+        - pg
+        - redis
+    volumes:
+        - .:/app
+    env_file:
+        - user.env
+
+pg:
+    image: postgres:10.3
+    ports:
+        - "5432:5432"
+    environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=postgres
+        - POSTGRES_DB=mydb
+    volumes:
+        - ./data/pg:/var/lib/postgresql/data
+
+redis:
+    image: redis:3.2

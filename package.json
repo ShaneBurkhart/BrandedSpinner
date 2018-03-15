@@ -1,0 +1,26 @@
+{
+  "name": "brandedspinner",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShaneBurkhart/BrandedSpinner.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ShaneBurkhart/BrandedSpinner/issues"
+  },
+  "homepage": "https://github.com/ShaneBurkhart/BrandedSpinner#readme",
+  "dependencies": {
+    "@shopify/shopify-express": "^1.0.0-alpha.7",
+    "express": "^4.16.3",
+    "express-session": "^1.15.6",
+    "pg": "^7.4.1"
+  }
+}
