@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script
+  src="https://code.jquery.com/jquery-2.2.4.min.js"
+    integrity="sha256-BbhdlvQf/xTY9gja0Dq3HiwQF8LaCRTXxZKRutelT44="
+    crossorigin="anonymous"></script>
+  </head>
+  <body>
+    <!--light red: #ec6b5d-->
+    <!--dark red: #e74c3c-->
+
+    <script>
+
+      $(document).ready(function () {
+        var has_spun = false;
+        var $popup = $(".spinner-container .popup");
+        var $spinner = $(".spinner-container .spinner");
+        var $tick = $(".spinner-container .tick");
+        var $button = $(".spinner-container .button");
+        var $pegs = $(".spinner .peg");
+
+        $pegs.each(function (i, $peg) {
+          var $paths = $($peg).find('svg path')
+          var $numbers = $($peg).find('.numbers')
+
+          $paths.each(function (j, $path) {
+            if (i % 2 == 0) {
+              $numbers.css("color", "#000000");
+
+              if (j == 0) {
+                $($path).attr("fill", "#d6d6d6");
+              } else {
+                $($path).attr("fill", "#e7e7e7");
+              }
+            } else {
+              $numbers.css("color", "#f2f2f2");
+
+              if (j == 0) {
+                $($path).attr("fill", "#e74c3c");
+              } else {
+                $($path).attr("fill", "#ec6b5d");
+              }
+            }
+          });
+        });
+
+        var enlargeSpinner = function (callback) {
+          var tick_start = {
+            bottom: parseFloat($tick.css('bottom')),
+            right: parseFloat($tick.css('right')),
+          };
+
+          $({
+            bottom: parseFloat($spinner.css('bottom')), right: parseFloat($spinner.css('right'))
+          }).animate({
+            bottom: "-143px", right: "-143px",
+          }, {
+            easing: "linear",
+            duration: 150,
+            step: function(val, info) {
+              var spinner_changes = {};
+              var tick_changes = {};
+
+              spinner_changes[info.prop] = val + info.unit;
+              tick_changes[info.prop] = tick_start[info.prop] + (val - info.start) + info.unit;
+
+              $spinner.css(spinner_changes);
+              $tick.css(tick_changes);
+            },
+            complete: callback,
+          });
+
+        }
+
+        var spinToItem = function (index, callback) {
+          var itemDeg = 18 * index;
+          var finalSpinDeg = 1080 + itemDeg;
+          var stopDeg = finalSpinDeg + 360;
+
+          // we use a pseudo object for the animation
+          // (starts from `0` to `angle`), you can name it as you want
+          $({ deg: 0 }).animate({ deg: finalSpinDeg }, {
+            easing: "linear",
+            duration: 1000,
+            step: function(val, info) {
+              // in the step-callback (that is fired each step of the animation),
+              // you can use the `now` paramter which contains the current
+              // animation-position (`0` up to `angle`)
+              if (info.prop === "deg") {
+                $spinner.css({ transform: 'rotate(' + val + 'deg)' });
+              } else {
+                var changes = {};
+                changes[info.prop] = val + info.unit;
+                $spinner.css(changes);
+              }
+            },
+            complete: function () {
+              $({ deg: finalSpinDeg }).animate({ deg: stopDeg }, {
+                easing: "easeOutQuart",
+                duration: 3000,
+                step: function(now) {
+                  // in the step-callback (that is fired each step of the animation),
+                  // you can use the `now` paramter which contains the current
+                  // animation-position (`0` up to `angle`)
+                  $spinner.css({
+                      transform: 'rotate(' + now + 'deg)'
+                  });
+                },
+                complete: function() { callback(index); },
+              });
+            }
+          });
+        };
+
+        var showDiscountPopup = function (index) {
+
+          $popup.slideToggle();
+        };
+
+        var spinWheel = function () {
+          if (has_spun) return;
+
+          var index = Math.floor(Math.random() * 20);
+
+          has_spun = true;
+          $button.hide();
+
+          enlargeSpinner(function () {
+            spinToItem(index, showDiscountPopup);
+          });
+        };
+
+        $spinner.click(function() { spinWheel(); });
+        $button.click(function() { spinWheel(); });
+      });
+    </script>
+
+    <style>
+
+      html, body {
+        margin: 0;
+        padding: 0;
+      }
+
+      .spinner-container, .spinner-container * {
+        box-sizing: border-box;
+      }
+
+
+      .spinner-container {
+        position: fixed;
+        right: 0;
+        bottom: 0;
+      }
+
+      .popup {
+        width: 300px;
+        padding: 15px 10px;
+        background-color: #e7e7e7;
+        border: 1px solid #d6d6d6;
+      }
+
+      .popup h3 {
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 10px;
+      }
+
+      .popup p {
+        font-size: 14px;
+        text-align: center;
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+
+      .popup input {
+        display: block;
+        width: 100%;
+        padding: 7px 10px;
+        border: none;
+        margin-bottom: 10px;
+        font-size: 14px;
+        border: 1px solid #d6d6d6;
+        border-radius: 3px;
+      }
+
+      .popup button {
+        display: block;
+        width: 100%;
+        color:#f2f2f2;
+        background-color: #ec6b5d;
+        border: 2px solid #e74c3c;
+        border-radius: 4px;
+        padding: 4px 10px;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      .button {
+        color:#f2f2f2;
+        background-color: #ec6b5d;
+        border: 2px solid #e74c3c;
+        border-radius: 4px;
+        padding: 4px 10px;
+        margin: 0 80px 25px 0;
+        font-size: 16px;
+        cursor: pointer;
+      }
+
+      .tick {
+        display: block;
+        position: absolute;
+        z-index: -1;
+        bottom: 64px;
+        right: 55px;
+        width: 10px;
+        height: 10px;
+        background-color: black;
+      }
+
+      .spinner {
+        cursor: pointer;
+        position: absolute;
+        z-index: -1;
+        width: 280px;
+        height: 280px;
+
+        bottom: -163px;
+        right: -203px;
+      }
+
+      .spinner .peg {
+        height: 140px;
+        width: 44px;
+        overflow: hidden;
+
+        position: absolute;
+        top: 0;
+        left: 50%;
+        margin-left: -22px;
+
+        transform-origin: 50% 100%;
+      }
+
+      .spinner .peg .numbers {
+        text-align: center;
+        width: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        margin: 0;
+        font-size: 18px;
+        font-family: "sans-serif";
+        padding-top: 1px;
+      }
+
+      .spinner .peg .numbers .sign {
+        font-size: 12px;
+      }
+
+      .spinner .peg svg {
+        overflow: hidden;
+      }
+
+      .spinner .peg:nth-child(1) { transform: rotate(0deg) }
+      .spinner .peg:nth-child(2) { transform: rotate(18deg) }
+      .spinner .peg:nth-child(3) { transform: rotate(36deg) }
+      .spinner .peg:nth-child(4) { transform: rotate(54deg) }
+      .spinner .peg:nth-child(5) { transform: rotate(72deg) }
+      .spinner .peg:nth-child(6) { transform: rotate(90deg) }
+      .spinner .peg:nth-child(7) { transform: rotate(108deg) }
+      .spinner .peg:nth-child(8) { transform: rotate(126deg) }
+      .spinner .peg:nth-child(9) { transform: rotate(144deg) }
+      .spinner .peg:nth-child(10) { transform: rotate(162deg) }
+      .spinner .peg:nth-child(11) { transform: rotate(180deg) }
+      .spinner .peg:nth-child(12) { transform: rotate(198deg) }
+      .spinner .peg:nth-child(13) { transform: rotate(216deg) }
+      .spinner .peg:nth-child(14) { transform: rotate(234deg) }
+      .spinner .peg:nth-child(15) { transform: rotate(252deg) }
+      .spinner .peg:nth-child(16) { transform: rotate(270deg) }
+      .spinner .peg:nth-child(17) { transform: rotate(288deg) }
+      .spinner .peg:nth-child(18) { transform: rotate(306deg) }
+      .spinner .peg:nth-child(19) { transform: rotate(324deg) }
+      .spinner .peg:nth-child(20) { transform: rotate(342deg) }
+    </style>
+
+    <script>
+      $.extend($.easing, {
+        def: 'easeOutQuad',
+        swing: function (x, t, b, c, d) {
+            //alert($.easing.default);
+            return $.easing[$.easing.def](x, t, b, c, d);
+        },
+        easeInQuad: function (x, t, b, c, d) {
+            return c*(t/=d)*t + b;
+        },
+        easeOutQuad: function (x, t, b, c, d) {
+            return -c *(t/=d)*(t-2) + b;
+        },
+        easeInOutQuad: function (x, t, b, c, d) {
+            if ((t/=d/2) < 1) return c/2*t*t + b;
+            return -c/2 * ((--t)*(t-2) - 1) + b;
+        },
+        easeInCubic: function (x, t, b, c, d) {
+            return c*(t/=d)*t*t + b;
+        },
+        easeOutCubic: function (x, t, b, c, d) {
+            return c*((t=t/d-1)*t*t + 1) + b;
+        },
+        easeInOutCubic: function (x, t, b, c, d) {
+            if ((t/=d/2) < 1) return c/2*t*t*t + b;
+            return c/2*((t-=2)*t*t + 2) + b;
+        },
+        easeInQuart: function (x, t, b, c, d) {
+            return c*(t/=d)*t*t*t + b;
+        },
+        easeOutQuart: function (x, t, b, c, d) {
+            return -c * ((t=t/d-1)*t*t*t - 1) + b;
+        },
+        easeInOutQuart: function (x, t, b, c, d) {
+            if ((t/=d/2) < 1) return c/2*t*t*t*t + b;
+            return -c/2 * ((t-=2)*t*t*t - 2) + b;
+        },
+        easeInQuint: function (x, t, b, c, d) {
+            return c*(t/=d)*t*t*t*t + b;
+        },
+        easeOutQuint: function (x, t, b, c, d) {
+            return c*((t=t/d-1)*t*t*t*t + 1) + b;
+        },
+        easeInOutQuint: function (x, t, b, c, d) {
+            if ((t/=d/2) < 1) return c/2*t*t*t*t*t + b;
+            return c/2*((t-=2)*t*t*t*t + 2) + b;
+        },
+        easeInSine: function (x, t, b, c, d) {
+            return -c * Math.cos(t/d * (Math.PI/2)) + c + b;
+        },
+        easeOutSine: function (x, t, b, c, d) {
+            return c * Math.sin(t/d * (Math.PI/2)) + b;
+        },
+        easeInOutSine: function (x, t, b, c, d) {
+            return -c/2 * (Math.cos(Math.PI*t/d) - 1) + b;
+        },
+        easeInExpo: function (x, t, b, c, d) {
+            return (t==0) ? b : c * Math.pow(2, 10 * (t/d - 1)) + b;
+        },
+        easeOutExpo: function (x, t, b, c, d) {
+            return (t==d) ? b+c : c * (-Math.pow(2, -10 * t/d) + 1) + b;
+        },
+        easeInOutExpo: function (x, t, b, c, d) {
+            if (t==0) return b;
+            if (t==d) return b+c;
+            if ((t/=d/2) < 1) return c/2 * Math.pow(2, 10 * (t - 1)) + b;
+            return c/2 * (-Math.pow(2, -10 * --t) + 2) + b;
+        },
+        easeInCirc: function (x, t, b, c, d) {
+            return -c * (Math.sqrt(1 - (t/=d)*t) - 1) + b;
+        },
+        easeOutCirc: function (x, t, b, c, d) {
+            return c * Math.sqrt(1 - (t=t/d-1)*t) + b;
+        },
+        easeInOutCirc: function (x, t, b, c, d) {
+            if ((t/=d/2) < 1) return -c/2 * (Math.sqrt(1 - t*t) - 1) + b;
+            return c/2 * (Math.sqrt(1 - (t-=2)*t) + 1) + b;
+        },
+        easeInElastic: function (x, t, b, c, d) {
+            var s=1.70158;var p=0;var a=c;
+            if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;
+            if (a < Math.abs(c)) { a=c; var s=p/4; }
+            else var s = p/(2*Math.PI) * Math.asin (c/a);
+            return -(a*Math.pow(2,10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )) + b;
+        },
+        easeOutElastic: function (x, t, b, c, d) {
+            var s=1.70158;var p=0;var a=c;
+            if (t==0) return b;  if ((t/=d)==1) return b+c;  if (!p) p=d*.3;
+            if (a < Math.abs(c)) { a=c; var s=p/4; }
+            else var s = p/(2*Math.PI) * Math.asin (c/a);
+            return a*Math.pow(2,-10*t) * Math.sin( (t*d-s)*(2*Math.PI)/p ) + c + b;
+        },
+        easeInOutElastic: function (x, t, b, c, d) {
+            var s=1.70158;var p=0;var a=c;
+            if (t==0) return b;  if ((t/=d/2)==2) return b+c;  if (!p) p=d*(.3*1.5);
+            if (a < Math.abs(c)) { a=c; var s=p/4; }
+            else var s = p/(2*Math.PI) * Math.asin (c/a);
+            if (t < 1) return -.5*(a*Math.pow(2,10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )) + b;
+            return a*Math.pow(2,-10*(t-=1)) * Math.sin( (t*d-s)*(2*Math.PI)/p )*.5 + c + b;
+        },
+        easeInBack: function (x, t, b, c, d, s) {
+            if (s == undefined) s = 1.70158;
+            return c*(t/=d)*t*((s+1)*t - s) + b;
+        },
+        easeOutBack: function (x, t, b, c, d, s) {
+            if (s == undefined) s = 1.70158;
+            return c*((t=t/d-1)*t*((s+1)*t + s) + 1) + b;
+        },
+        easeInOutBack: function (x, t, b, c, d, s) {
+            if (s == undefined) s = 1.70158;
+            if ((t/=d/2) < 1) return c/2*(t*t*(((s*=(1.525))+1)*t - s)) + b;
+            return c/2*((t-=2)*t*(((s*=(1.525))+1)*t + s) + 2) + b;
+        },
+        easeInBounce: function (x, t, b, c, d) {
+            return c - $.easing.easeOutBounce (x, d-t, 0, c, d) + b;
+        },
+        easeOutBounce: function (x, t, b, c, d) {
+            if ((t/=d) < (1/2.75)) {
+                return c*(7.5625*t*t) + b;
+            } else if (t < (2/2.75)) {
+                return c*(7.5625*(t-=(1.5/2.75))*t + .75) + b;
+            } else if (t < (2.5/2.75)) {
+                return c*(7.5625*(t-=(2.25/2.75))*t + .9375) + b;
+            } else {
+                return c*(7.5625*(t-=(2.625/2.75))*t + .984375) + b;
+            }
+        },
+        easeInOutBounce: function (x, t, b, c, d) {
+            if (t < d/2) return $.easing.easeInBounce (x, t*2, 0, c, d) * .5 + b;
+            return $.easing.easeOutBounce (x, t*2-d, 0, c, d) * .5 + c*.5 + b;
+        }
+      });
+    </script>
+
+    <div class="spinner-container">
+      <div class="popup" style="display: none;">
+        <h3>You won %15 off!</h3>
+
+        <p>Enter your email below to get %15 off of your first Monolith notebook!</p>
+
+        <form>
+          <input type="text" name="email" placeholder="user@domain.com">
+          <button>Claim Your Discount</button>
+        </form>
+      </div>
+
+      <div class="button">Spin to Win!</div>
+
+      <div class="tick"></div>
+
+      <div class="spinner">
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+        <div class="peg">
+          <p class="numbers">
+            10<span class="sign">%</span>
+          </p>
+  <svg width="44" height="140" version="1.1" viewBox="0 0 11.641937 37.041415" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+   <g transform="matrix(.5 0 0 .5 .828 9.59)" stroke-width="2">
+    <g transform="translate(288 -451)" stroke-width="4">
+     <path d="m-286 432c-1.1 7e-3 -1.99 0.9-1.99 2 9e-4 0.0868 7e-3 0.173 0.0196 0.259l-2e-3 3e-3h-5.3e-4l8 52.3 4.6e-4 3e-3c0.167 0.958 0.998 1.66 1.97 1.66 0.975-1e-3 1.81-0.705 1.97-1.67h5.2e-4l8-52.3-2e-3 -2e-3c0.0113-0.0834 0.0174-0.167 0.0181-0.252-3.4e-4 -1.1-0.89-1.99-1.99-2-0.018-2e-3 -0.0378 4.9e-4 -0.0539 6.8e-4 -5.31-2e-3 -10.6-8.7e-4 -15.9-9.2e-4z" fill="#d6d6d6"/>
+     <path d="m-286 433c-0.349 2e-3 -0.602 0.256-0.602 0.604 8.5e-4 0.0256 2e-3 0.0499 4e-3 0.0643a1.39 1.39 0 0 1 -0.13 0.814l0.196-0.384 7.93 51.8c0.0532 0.298 0.29 0.499 0.593 0.499 0.304-1e-3 0.544-0.205 0.594-0.503l7.95-51.9 0.101 0.31a1.39 1.39 0 0 1 -0.0552 -0.619c2e-3 -0.0159 4e-3 -0.0362 5e-3 -0.0611-1.1e-4 -0.35-0.254-0.606-0.602-0.607a1.39 1.39 0 0 1 -0.109 -6e-3c0.165 0.0138 0.122 9e-3 0.0599 7e-3 -5.31-2e-3 -10.6-9.6e-4 -15.9-1e-3z" fill="#e7e7e7" xlink:href="#path1063"/>
+    </g>
+   </g>
+  </svg>
+        </div>
+      </div>
+    </div>
+
+  </body>
+</html>
