@@ -10,6 +10,8 @@ html
         script(type="text/javascript" src="/static/jquery-3.3.1.min.js")
         script(type="text/javascript" src="/static/underscore-min.js")
         script(type="text/javascript" src="/static/color-picker.min.js")
+        script(type="text/javascript" src="/static/semantic.min.js")
+        script(type="text/javascript" src="/static/application.js")
 
     body
         .fluid-container
@@ -24,27 +26,30 @@ html
                             th Gravity
                             th Background
                             th Outline
+                            th Text
+                            th Amount
                             th Discount Code
                             th Redirect Path
-                            th Amount
                             th Description
                         tbody#peg-settings
                             each _, i in Array(10)
                                 tr(data-index=i)
                                     td
-                                        input(type="text" name="gravity" id="gravity")
+                                        input(type="text" name="gravity")
                                     td
-                                        input.color-picker-input.background-color(type="text" name="background-color")
+                                        input.color-picker-input.background-color(type="text" name="background-color" value="#e7e7e7")
                                     td
-                                        input.color-picker-input.outline-color(type="text" name="outline")
+                                        input.color-picker-input.outline-color(type="text" name="outline-color" value="#d6d6d6")
                                     td
-                                        input(type="text" name="discount-code" id="discount-code")
+                                        input.color-picker-input.numbers-color(type="text" name="numbers-color" value="#000000")
                                     td
-                                        input(type="text" name="redirect" id="redirect")
+                                        input.amount(type="text" name="amount" value="10%" style="width: 60px;")
                                     td
-                                        input(type="text" name="amount" id="amount")
+                                        input(type="text" name="discount-code")
                                     td
-                                        input(type="text" name="description" id="description")
+                                        input(type="text" name="redirect")
+                                    td
+                                        input(type="text" name="description")
 
             .card
                 h2 Popup Settings
@@ -98,23 +103,34 @@ html
 
 
             script.
-                var updateSpinnerPreview = _.debounce(function () {
-                    var $pegSettings = $('#peg-settings tr');
-                    var $pegs = $('.spinner .peg');
+                var $pegSettings = $('#peg-settings tr');
+                var $pegs = $('.spinner .peg');
 
+                var updateSpinnerPreview = _.debounce(function () {
                     $pegSettings.each(function (i, pegSetting) {
                         var $pegSetting = $(pegSetting);
                         var $peg = $($pegs[i]);
-                        var $paths = $peg.find('svg path')
+                        var $paths = $peg.find('svg path');
+                        var $numbers = $peg.find('.numbers');
+
                         var backgroundColor = $pegSetting.find('.background-color').val();
                         var outlineColor = $pegSetting.find('.outline-color').val();
+                        var numbersColor = $pegSetting.find('.numbers-color').val();
+                        var amount = $pegSetting.find('.amount').val();
 
                         $($paths[0]).css('fill', outlineColor);
                         $($paths[1]).css('fill', backgroundColor);
+
+                        $numbers.css('color', numbersColor);
+
+                        $numbers.text(amount);
                     });
                 }, 300);
 
+                // Update spinner when text amount has changed.
+                $pegSettings.on('change', 'input.amount', function () { updateSpinnerPreview(); });
 
+                // COLOR PICKERS
                 var colorPickers = document.getElementsByClassName('color-picker-input');
                 var changeColorFactory = function(i) {
                     return function(color) {
@@ -140,4 +156,3 @@ html
                     picker.target.onkeyup = update;
                     picker.target.oninput = update;
                 }
-
