@@ -1,0 +1,50 @@
+.spinner {
+    position: relative;
+    cursor: pointer;
+    width: 280px;
+    height: 280px;
+}
+
+.spinner .peg {
+    height: 140px;
+    width: 91px;
+    overflow: hidden;
+
+    position: absolute;
+    top: 0;
+    left: 50%;
+    margin-left: -45px;
+
+    transform-origin: 50% 100%;
+}
+
+.spinner .peg .numbers {
+    text-align: center;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin: 0;
+    font-size: 18px;
+    font-family: "sans-serif";
+    padding-top: 1px;
+}
+
+.spinner .peg .numbers .sign {
+    font-size: 12px;
+}
+
+.spinner .peg svg {
+    overflow: hidden;
+}
+
+.spinner .peg:nth-child(1) { transform: rotate(0deg) }
+.spinner .peg:nth-child(2) { transform: rotate(36deg) }
+.spinner .peg:nth-child(3) { transform: rotate(72deg) }
+.spinner .peg:nth-child(4) { transform: rotate(108deg) }
+.spinner .peg:nth-child(5) { transform: rotate(144deg) }
+.spinner .peg:nth-child(6) { transform: rotate(180deg) }
+.spinner .peg:nth-child(7) { transform: rotate(216deg) }
+.spinner .peg:nth-child(8) { transform: rotate(252deg) }
+.spinner .peg:nth-child(9) { transform: rotate(288deg) }
+.spinner .peg:nth-child(10) { transform: rotate(324deg) }

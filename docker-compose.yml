@@ -9,6 +9,7 @@ web:
         - .:/app
     env_file:
         - user.env
+    command: "node_modules/nodemon/bin/nodemon.js ./index.js 127.0.0.1 3000"
 
 pg:
     image: postgres:10.3

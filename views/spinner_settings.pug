@@ -1,0 +1,109 @@
+doctype html
+html
+    head
+        link(rel="stylesheet" href="/static/semantic.min.css")
+        link(rel="stylesheet" href="/static/color-picker.min.css")
+        link(rel="stylesheet" href="/static/application.css")
+        link(rel="stylesheet" href="/static/spinner.css")
+        link(rel="stylesheet" href="/static/popup.css")
+
+        script(type="text/javascript" src="/static/jquery-3.3.1.min.js")
+        script(type="text/javascript" src="/static/color-picker.min.js")
+
+    body
+        .fluid-container
+            .card
+                h2 Spinner Settings
+
+                include spinner/spinner.pug
+
+                form.ui.form(action="/app/spinner_settings" method="post")
+                    table.ui.table
+                        thead
+                            th Gravity
+                            th Background
+                            th Outline
+                            th Discount Code
+                            th Redirect Path
+                            th Amount
+                            th Description
+                        tbody
+                            each _ in Array(10)
+                                tr
+                                    td
+                                        input(type="text" name="gravity" id="gravity")
+                                    td
+                                        input.color-picker-input(type="text" name="primary-color" id="primary-color")
+                                    td
+                                        input.color-picker-input(type="text" name="secondary-color" id="secondary-color")
+                                    td
+                                        input(type="text" name="discount-code" id="discount-code")
+                                    td
+                                        input(type="text" name="redirect" id="redirect")
+                                    td
+                                        input(type="text" name="amount" id="amount")
+                                    td
+                                        input(type="text" name="description" id="description")
+
+            .card
+                h2 Popup Settings
+
+                include spinner/popup.pug
+
+                form.ui.form(action="/app/spinner_settings" method="post")
+                    h4 Popup
+
+                    .ui.equal.width.grid
+                        .column
+                            .field
+                                label Background
+                                input.color-picker-input(type="text" name="primary-color" id="primary-color")
+                        .column
+                            .field
+                                label Border
+                                input.color-picker-input(type="text" name="secondary-color" id="secondary-color")
+                        .column
+                            .field
+                                label Text
+                                input.color-picker-input(type="text" name="secondary-color" id="secondary-color")
+                    h4 Button
+
+                    .ui.equal.width.grid
+                        .column
+                            .field
+                                label Background
+                                input.color-picker-input(type="text" name="primary-color" id="primary-color")
+                        .column
+                            .field
+                                label Border
+                                input.color-picker-input(type="text" name="secondary-color" id="secondary-color")
+
+                        .column
+                            .field
+                                label Text
+                                input.color-picker-input(type="text" name="secondary-color" id="secondary-color")
+                    h4 Content
+
+                    .field
+                        label Header
+                        input(type="text")
+
+                    .field
+                        label Body
+                        textarea(rows=3)
+
+            .card
+
+
+
+            script.
+                var colorPickers = document.getElementsByClassName('color-picker-input');
+                var changeColor = function(color) {
+                    this.target.value = '#' + color;
+                };
+
+                for (var i = 0; i < colorPickers.length; i++) {
+                    var picker = new CP(colorPickers[i]);
+                    picker.on("change", changeColor);
+                }
+
