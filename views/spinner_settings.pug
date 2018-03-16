@@ -8,6 +8,7 @@ html
         link(rel="stylesheet" href="/static/popup.css")
 
         script(type="text/javascript" src="/static/jquery-3.3.1.min.js")
+        script(type="text/javascript" src="/static/underscore-min.js")
         script(type="text/javascript" src="/static/color-picker.min.js")
 
     body
@@ -27,15 +28,15 @@ html
                             th Redirect Path
                             th Amount
                             th Description
-                        tbody
-                            each _ in Array(10)
-                                tr
+                        tbody#peg-settings
+                            each _, i in Array(10)
+                                tr(data-index=i)
                                     td
                                         input(type="text" name="gravity" id="gravity")
                                     td
-                                        input.color-picker-input(type="text" name="primary-color" id="primary-color")
+                                        input.color-picker-input.background-color(type="text" name="background-color")
                                     td
-                                        input.color-picker-input(type="text" name="secondary-color" id="secondary-color")
+                                        input.color-picker-input.outline-color(type="text" name="outline")
                                     td
                                         input(type="text" name="discount-code" id="discount-code")
                                     td
@@ -97,13 +98,46 @@ html
 
 
             script.
+                var updateSpinnerPreview = _.debounce(function () {
+                    var $pegSettings = $('#peg-settings tr');
+                    var $pegs = $('.spinner .peg');
+
+                    $pegSettings.each(function (i, pegSetting) {
+                        var $pegSetting = $(pegSetting);
+                        var $peg = $($pegs[i]);
+                        var $paths = $peg.find('svg path')
+                        var backgroundColor = $pegSetting.find('.background-color').val();
+                        var outlineColor = $pegSetting.find('.outline-color').val();
+
+                        $($paths[0]).css('fill', outlineColor);
+                        $($paths[1]).css('fill', backgroundColor);
+                    });
+                }, 300);
+
+
                 var colorPickers = document.getElementsByClassName('color-picker-input');
-                var changeColor = function(color) {
-                    this.target.value = '#' + color;
+                var changeColorFactory = function(i) {
+                    return function(color) {
+                        var hexColor = "#" + color;
+                        this.target.value = hexColor;
+
+                        updateSpinnerPreview();
+                    };
+                };
+
+                var updateColorFactory = function (picker) {
+                    return function update() { picker.set(this.value).enter(); }
                 };
 
                 for (var i = 0; i < colorPickers.length; i++) {
                     var picker = new CP(colorPickers[i]);
-                    picker.on("change", changeColor);
+                    var update = updateColorFactory(picker);
+
+                    picker.on("change", changeColorFactory(i));
+
+                    picker.target.oncut = update;
+                    picker.target.onpaste = update;
+                    picker.target.onkeyup = update;
+                    picker.target.oninput = update;
                 }
 
