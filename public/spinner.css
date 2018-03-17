@@ -20,7 +20,7 @@
 
 .spinner .peg .numbers {
     text-align: center;
-    width: 100%;
+    width: 67px;
     position: absolute;
     top: 0;
     left: 0;
@@ -28,6 +28,8 @@
     font-size: 18px;
     font-family: "sans-serif";
     padding-top: 5px;
+    margin: 0 12px;
+    overflow: hidden;
 }
 
 .spinner .peg .numbers .sign {

@@ -30,7 +30,7 @@ html
                             th Amount
                             th Discount Code
                             th Redirect Path
-                            th Description
+                            th Popup Headline
                         tbody#peg-settings
                             each _, i in Array(10)
                                 tr(data-index=i)
@@ -51,54 +51,56 @@ html
                                     td
                                         input(type="text" name="description")
 
-            .card
-                h2 Popup Settings
+            .container
+                .card
+                    h2 Popup Settings
 
-                include spinner/popup.pug
+                    include spinner/popup.pug
 
-                form.ui.form(action="/app/spinner_settings" method="post")
-                    h4 Popup
+                    form.ui.form#popup-settings(action="/app/spinner_settings" method="post")
+                        h4 Popup
 
-                    .ui.equal.width.grid
-                        .column
-                            .field
-                                label Background
-                                input.color-picker-input(type="text" name="primary-color" id="primary-color")
-                        .column
-                            .field
-                                label Border
-                                input.color-picker-input(type="text" name="secondary-color" id="secondary-color")
-                        .column
-                            .field
-                                label Text
-                                input.color-picker-input(type="text" name="secondary-color" id="secondary-color")
-                    h4 Button
+                        .ui.equal.width.grid
+                            .column
+                                .field
+                                    label Background
+                                    input.color-picker-input.background-color(type="text" name="background-color" value="#e7e7e7")
+                            .column
+                                .field
+                                    label Border
+                                    input.color-picker-input.border-color(type="text" name="border-color" value="#d6d6d6")
+                            .column
+                                .field
+                                    label Text
+                                    input.color-picker-input.text-color(type="text" name="text-color" value="#000000")
 
-                    .ui.equal.width.grid
-                        .column
-                            .field
-                                label Background
-                                input.color-picker-input(type="text" name="primary-color" id="primary-color")
-                        .column
-                            .field
-                                label Border
-                                input.color-picker-input(type="text" name="secondary-color" id="secondary-color")
+                        h4 Button
 
-                        .column
-                            .field
-                                label Text
-                                input.color-picker-input(type="text" name="secondary-color" id="secondary-color")
-                    h4 Content
+                        .ui.equal.width.grid
+                            .column
+                                .field
+                                    label Background
+                                    input.color-picker-input.button-background-color(type="text" name="button-background-color" value="#ec6b5d")
+                            .column
+                                .field
+                                    label Border
+                                    input.color-picker-input.button-border-color(type="text" name="button-border-color" value="#e74c3c")
 
-                    .field
-                        label Header
-                        input(type="text")
+                            .column
+                                .field
+                                    label Text
+                                    input.color-picker-input.button-text-color(type="text" name="button-text-color" value="#f2f2f2")
+                        h4 Content
 
-                    .field
-                        label Body
-                        textarea(rows=3)
+                        .field
+                            label Header
+                            input.header-text(type="text" name="header-text" value="You won 10% off your first order!")
 
-            .card
+                        .field
+                            label Body
+                            textarea.body-text(rows=3 name="body-text") Enter your email below to have your discount automatically added to your cart!
+
+                .card
 
 
 
@@ -127,8 +129,35 @@ html
                     });
                 }, 300);
 
+                var $popup = $('.popup');
+                var $popupSettings = $('#popup-settings');
+
+                var updatePopupPreview = _.debounce(function () {
+                    var backgroundColor = $popupSettings.find('.background-color').val();
+                    var borderColor = $popupSettings.find('.border-color').val();
+                    var textColor = $popupSettings.find('.text-color').val();
+                    var buttonBackgroundColor = $popupSettings.find('.button-background-color').val();
+                    var buttonBorderColor = $popupSettings.find('.button-border-color').val();
+                    var buttonTextColor = $popupSettings.find('.button-text-color').val();
+
+                    var headerText = $popupSettings.find('.header-text').val();
+                    var bodyText = $popupSettings.find('.body-text').val();
+
+                    $popup.css('background-color', backgroundColor);
+                    $popup.css('border-color', borderColor);
+                    $popup.css('color', textColor);
+
+                    $popup.find('button').css('background-color', buttonBackgroundColor);
+                    $popup.find('button').css('border-color', buttonBorderColor);
+                    $popup.find('button').css('color', buttonTextColor);
+
+                    $popup.find('h3').html(headerText);
+                    $popup.find('p').html(bodyText);
+                }, 300);
+
                 // Update spinner when text amount has changed.
                 $pegSettings.on('change', 'input.amount', function () { updateSpinnerPreview(); });
+                $popupSettings.on('change', 'input.header-text, input.body-text', function () { updatePopupPreview(); });
 
                 // COLOR PICKERS
                 var colorPickers = document.getElementsByClassName('color-picker-input');
@@ -138,6 +167,7 @@ html
                         this.target.value = hexColor;
 
                         updateSpinnerPreview();
+                        updatePopupPreview();
                     };
                 };
 
